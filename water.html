@@ -16,6 +16,14 @@
             margin: 50px auto;
             min-height: 300px;
         }
+        .wrap + p {
+            text-align: center;
+        }
+        .wrap + p span {
+            color: #f00;
+            font-size: 20px;
+            font-weight: 500;
+        }
         table{
             margin: 0 auto;
             border-collapse: collapse;
@@ -59,6 +67,7 @@
     <div id="wrap" class="wrap">
         
     </div>
+    <p id="value">装水量：<span>0</span></p>
     <div id="ctrl" class="ctrl">
         <input type="text" name="" id="arr_input" placeholder="" />
         <button type="button" id="submit">砌墙装水</button>
@@ -80,7 +89,7 @@
             }
             createTable(arr)
         }
-
+        //点击事件
         $('#submit').click(init);
 
         function createTable(arr) {
@@ -90,6 +99,8 @@
 
             var $table = $('<table>');
             var tHtml = '';
+
+            $('#value span').text(0);
 
             for(i = 0; i < row; i++) {
                 tHtml += '<tr>';
@@ -107,10 +118,14 @@
             //装水
             var arrList = dealArr(arr);
 
-            for(let i = 0; i < arrList.length; i++) {
-                waterCount += water(arrList[i], row, $table);
-            }
-            console.log(waterCount)
+            setTimeout(function() {
+                for(let i = 0; i < arrList.length; i++) {
+                    waterCount += water(arrList[i], row, $table);
+                    $('#value span').text(waterCount);
+                }
+            }, 1000);
+            
+            // console.log(waterCount)
             
             //插入DOM
             $('#wrap').empty().append($table);
