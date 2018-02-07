@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>终极版水槽灌水</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+        }
+        .wrap {
+            width: 1000px;
+            margin: 50px auto;
+            min-height: 300px;
+        }
+        table{
+            margin: 0 auto;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        td {
+            width: 100px;
+            height: 40px;
+            border: 1px solid #4A4A4A;
+        }
+        .brick {
+            background-color: #f8ff00;
+        }
+        .water {
+            background-color: #75db4e;
+        }
+        .ctrl {
+            text-align: center;
+        }
+        input {
+            width: 300px;
+            height: 40px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding-left: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 80px;
+            height: 40px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            box-sizing: border-box;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>经典算法--最大存水量问题</h1>
+    <div id="wrap" class="wrap">
+        
+    </div>
+    <div id="ctrl" class="ctrl">
+        <input type="text" name="" id="arr_input" placeholder="" />
+        <button type="button" id="submit">砌墙装水</button>
+        <p style="color: red; margin-top: 10px;"><span style="color: #000;font-size: 16px">输入规则：</span>首位和结尾必须为数字，数字与数字之间用英文逗号分隔!</p>
+    </div>
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/1.12.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        var arr = [5, 2, 3, 2, 4, 9, 3, 0, 6, 10, 8, 10, 0, 8, 10];
+
+        function init() {
+            var value = $('#arr_input').val();
+            var strArr = value.split(',');
+
+            if(value.trim() && strArr.length) {
+                arr = [];
+                for(let i = 0; i < strArr.length; i++) {
+                    arr[i] = parseInt(strArr[i].trim());
+                }
+            }
+            createTable(arr)
+        }
+
+        $('#submit').click(init);
+
+        function createTable(arr) {
+            var row = Math.max.apply(arr,arr), //行
+                col = arr.length,  //列
+                i, j, waterCount = 0;
+
+            var $table = $('<table>');
+            var tHtml = '';
+
+            for(i = 0; i < row; i++) {
+                tHtml += '<tr>';
+                for(j = 0; j < col; j++) {
+                    if(i < (row - arr[j])) { //判断是否为砖
+                        tHtml += '<td></td>';
+                    } else {
+                        tHtml += '<td class="brick"></td>';
+                    }
+                }
+                tHtml += '</tr>';
+            }
+            
+            $table.html(tHtml);
+            //装水
+            var arrList = dealArr(arr);
+
+            for(let i = 0; i < arrList.length; i++) {
+                waterCount += water(arrList[i], row, $table);
+            }
+            console.log(waterCount)
+            
+            //插入DOM
+            $('#wrap').empty().append($table);
+        }
+
+        function water(arr, row, $table) {
+            if(!arr || arr.length < 2) {
+                return;
+            }
+
+            var waters = 0,
+                leftLargest = 0,
+                rightLargest = 0,
+                right = [],
+                num, min;
+
+
+            for(let i = arr.length - 1; i >= 0; i--) {
+                if(!arr[i]) continue;
+                rightLargest = Math.max(rightLargest,arr[i]);
+                right[i] = rightLargest;
+            }
+            for(let i = 0; i < arr.length; i++) {
+                if(!arr[i]) continue;
+                leftLargest = Math.max(leftLargest, arr[i]);
+                min = Math.min(leftLargest, right[i]);
+                num = min - arr[i];
+                if(num > 0 && num <= 1) {
+                    $table.find('tr:nth-child('+(row - min + 1) +') td:nth-child('+ (i + 1) +')').addClass('water');
+                } else if(num > 1) {
+                    for(let j = 0; j < num; j++) {
+                         $table.find('tr:nth-child('+(row - min + 1 + j) +') td:nth-child('+ (i + 1) +')').addClass('water');
+                    }
+                }
+                waters += num > 0 ? num : 0;
+            }
+            // console.log(waters);
+            return waters;
+        }
+
+        function dealArr(arr) {
+            var arrList = createList(arr);
+            //_j为根据不同下标的数组 “结合” 原始数组判断从哪个下标开始push的下标值
+            let _j = -1;
+            for(let i = 0; i < arrList.length; i++) {
+                let n = -1;
+                for(let j = 0; j < arr.length; j++) {
+                    //判断0的个数及位置,并判断在当前数组下，确定从哪个下标开始push
+                    if(arr[j] === 0) {
+                        n++;
+                        if(j >= _j) {
+                            _j = j;
+                        }
+                    }
+                    // console.log(i, n)
+                    //判断是第几个数组（根据第几个0判断）如果当前数组所处的位置与0的位置相同，终止循环
+                    if(i === n) {
+                        break;
+                    }
+                    //判断如果当前循环j小于_j时不进行push
+                    if(j <= _j) {
+                        continue;
+                    }
+                    arrList[i][j] = arr[j];
+                }
+            }
+            return arrList;
+        }
+
+        function createList(arr) {
+            var result = [[]];
+            for(let i = 0; i < arr.length; i++) {
+                if(arr[i] === 0) {
+                    result.push([]);
+                }
+            }
+            return result;
+        }
+    </script>
+</body>
+</html>
